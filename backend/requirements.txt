@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pyjwt
+bcrypt
+pydantic[email]
+psycopg2-binary
+openpyxl
