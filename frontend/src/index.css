@@ -160,3 +160,128 @@ textarea.input { padding-left: 14px; resize: vertical; min-height: 90px; }
 .result-icon.idle { background: var(--primary-soft); color: var(--primary); }
 .student h2 { margin-bottom: 6px; }
 .student p { margin-bottom: 20px; }
+
+/* ---------- Geolocation & Verification UI ---------- */
+.geo-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  margin-bottom: 14px;
+  text-align: left;
+}
+.geo-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.geo-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.geo-icon.ready {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.geo-icon.warn {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.geo-text {
+  line-height: 1.35;
+}
+.geo-text b {
+  display: block;
+  font-size: 13px;
+}
+.geo-text span {
+  font-size: 12px;
+  color: var(--muted);
+  display: block;
+}
+.radius-select-wrap {
+  margin-bottom: 14px;
+}
+.radius-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.radius-select {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.radius-btn {
+  padding: 8px 6px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.15s;
+  text-align: center;
+}
+.radius-btn:hover {
+  border-color: var(--primary);
+}
+.radius-btn.on {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 700;
+}
+.location-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--primary-soft);
+  color: var(--primary);
+  margin: 4px 0 14px;
+}
+.distance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: var(--success-soft);
+  color: var(--success);
+  margin-top: 4px;
+}
+.student-geo-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+  background: var(--bg);
+  padding: 6px 14px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  margin-bottom: 18px;
+}
+

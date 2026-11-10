@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -21,6 +21,10 @@ class AttendanceSession(Base):
     title = Column(String, nullable=False)
     started_at = Column(DateTime, default=datetime.utcnow)
     active = Column(Boolean, default=True)
+    lat = Column(Float, nullable=True, default=0.0)      # class location (teacher)
+    lng = Column(Float, nullable=True, default=0.0)
+    accuracy = Column(Float, nullable=True, default=0.0) # device accuracy in metres
+    radius = Column(Integer, default=100)    # allowed distance in metres
 
 
 class Attendance(Base):
@@ -31,3 +35,4 @@ class Attendance(Base):
     student_id = Column(Integer, ForeignKey("users.id"))
     student = relationship("User")
     marked_at = Column(DateTime, default=datetime.utcnow)
+    distance = Column(Float)                 # student's distance from class in metres
