@@ -1,3 +1,4 @@
+import hmac
 import os
 import bcrypt
 import jwt
@@ -8,7 +9,26 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import User
 
-SECRET = os.getenv("SECRET_KEY", "dev-only-secret-change-me-dev-only-secret")
+APP_ENV = os.getenv("APP_ENV", "development").strip().lower()
+SECRET = os.getenv("SECRET_KEY")
+if not SECRET:
+    if APP_ENV == "production":
+        raise RuntimeError("SECRET_KEY must be configured in production")
+    SECRET = "dev-only-secret-change-me-dev-only-secret"
+
+TEACHER_SIGNUP_CODE = os.getenv("TEACHER_SIGNUP_CODE")
+if APP_ENV == "production" and not TEACHER_SIGNUP_CODE:
+    raise RuntimeError("TEACHER_SIGNUP_CODE must be configured in production")
+
+
+def valid_teacher_signup_code(candidate: str | None) -> bool:
+    if not TEACHER_SIGNUP_CODE:
+        return APP_ENV != "production"
+    return bool(candidate) and hmac.compare_digest(
+        candidate.encode("utf-8"), TEACHER_SIGNUP_CODE.encode("utf-8")
+    )
+
+
 ALGO = "HS256"
 bearer = HTTPBearer()
 

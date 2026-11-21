@@ -14,6 +14,7 @@ export default function Login() {
     role: "STUDENT",
     year: "",
     branch: "",
+    teacherCode: "",
   });
   const [msg, setMsg] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -28,6 +29,8 @@ export default function Login() {
         const registration = { ...f };
         if (f.role === "TEACHER") {
           delete registration.year;
+        } else {
+          delete registration.teacherCode;
         }
         await api.post("/auth/register", registration);
         setMode("login");
@@ -122,6 +125,18 @@ export default function Login() {
               )}
               {f.role === "TEACHER" && (
                 <>
+                  <label className="register-label" htmlFor="teacher-code">Teacher signup code</label>
+                  <input
+                    id="teacher-code"
+                    className="input register-select"
+                    type="password"
+                    autoComplete="off"
+                    placeholder="Enter the code provided by your project admin"
+                    value={f.teacherCode}
+                    onChange={set("teacherCode")}
+                    maxLength={128}
+                    required={import.meta.env.PROD}
+                  />
                   <label className="register-label" htmlFor="teacher-branch">Branch</label>
                   <select
                     id="teacher-branch"

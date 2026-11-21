@@ -18,7 +18,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from database import Base, engine, get_db
 from models import User, Course, Enrollment, AttendanceSession, Attendance
 from security import (hash_password, verify_password, auth_token, qr_token,
-                      decode, require_role)
+                      decode, require_role, APP_ENV, valid_teacher_signup_code)
 
 BRANCHES = ("IT", "CS", "ENTC", "PROD", "MECHANICAL", "TEXTILE", "ELECTRICAL", "INSTRU")
 
@@ -85,7 +85,14 @@ auto_migrate()
 
 app = FastAPI(title="QR Attendance")
 
-origins = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173").split(",")
+frontend_origins = os.getenv("FRONTEND_ORIGIN")
+if APP_ENV == "production" and not frontend_origins:
+    raise RuntimeError("FRONTEND_ORIGIN must be configured in production")
+origins = [
+    origin.strip().rstrip("/")
+    for origin in (frontend_origins or "http://localhost:5173").split(",")
+    if origin.strip()
+]
 app.add_middleware(CORSMiddleware, allow_origins=origins,
                    allow_methods=["*"], allow_headers=["*"])
 
@@ -103,6 +110,7 @@ class RegisterReq(BaseModel):
     role: Literal["TEACHER", "STUDENT"]
     academic_year: int | None = Field(default=None, alias="year", ge=1, le=4)
     branch: str | None = Field(default=None, max_length=80)
+    teacher_signup_code: str | None = Field(default=None, alias="teacherCode", max_length=128)
 
 
 class StudentProfileReq(BaseModel):
@@ -188,6 +196,8 @@ def register(r: RegisterReq, db: Session = Depends(get_db)):
             raise HTTPException(400, "Students must provide their academic year and branch")
         academic_year = r.academic_year
     elif r.role == "TEACHER":
+        if not valid_teacher_signup_code(r.teacher_signup_code):
+            raise HTTPException(403, "A valid teacher registration code is required")
         branch = (r.branch or "").strip().upper()
         if not branch:
             raise HTTPException(400, "Teachers must provide their branch")
