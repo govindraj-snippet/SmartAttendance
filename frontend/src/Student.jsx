@@ -11,6 +11,7 @@ import {
   BookOpen,
   UsersRound,
   RefreshCw,
+  GraduationCap,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import api, { errMsg } from "./api";
@@ -247,14 +248,18 @@ export default function Student() {
   }, []);
 
   return (
-    <div className="student">
-      <div className="page-head">
-        <h1>{showCourses ? "Courses" : "Mark attendance"}</h1>
-        <p className="muted">
-          {showCourses
-            ? "Find courses for your year and branch, and manage your enrollments."
-            : "Scan your instructor's classroom QR code to record your attendance."}
-        </p>
+    <div className="student student-dashboard">
+      <div className="page-head dashboard-head">
+        <div>
+          <span className="role-kicker"><GraduationCap size={14} /> Student workspace</span>
+          <h1>{showCourses ? "My courses" : "Mark attendance"}</h1>
+          <p className="muted">
+            {showCourses
+              ? "Check course availability and manage your enrollments."
+              : "Scan the classroom QR and verify your location in one step."}
+          </p>
+        </div>
+        {!showCourses && <span className="student-step-chip">1 · Scan  2 · Verify</span>}
       </div>
 
       {showCourses && <section className="card student-courses">

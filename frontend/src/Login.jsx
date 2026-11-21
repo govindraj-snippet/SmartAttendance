@@ -77,6 +77,7 @@ export default function Login() {
 
           {mode === "register" && (
             <>
+              <label className="register-label">I am joining as</label>
               <div className="role-pick">
                 <button type="button" className={f.role === "STUDENT" ? "on" : ""} onClick={() => setF({ ...f, role: "STUDENT" })}>
                   <GraduationCap /> Student
@@ -87,7 +88,7 @@ export default function Login() {
               </div>
               <div className="field">
                 <User size={17} />
-                <input className="input" placeholder="Full name" value={f.name} onChange={set("name")} required />
+                <input className="input" aria-label="Full name" autoComplete="name" placeholder="Full name" value={f.name} onChange={set("name")} required />
               </div>
               {f.role === "STUDENT" && (
                 <>
@@ -141,11 +142,11 @@ export default function Login() {
 
           <div className="field">
             <Mail size={17} />
-            <input className="input" type="email" placeholder="Email" value={f.email} onChange={set("email")} required />
+            <input className="input" type="email" aria-label="Email address" autoComplete="email" placeholder="Email address" value={f.email} onChange={set("email")} required />
           </div>
           <div className="field">
             <Lock size={17} />
-            <input className="input" type="password" placeholder="Password" value={f.password} onChange={set("password")} required minLength={6} />
+            <input className="input" type="password" aria-label="Password" autoComplete={mode === "login" ? "current-password" : "new-password"} placeholder={mode === "login" ? "Password" : "Password (minimum 6 characters)"} value={f.password} onChange={set("password")} required minLength={6} />
           </div>
 
           <button className="btn btn-primary btn-block" disabled={loading}>

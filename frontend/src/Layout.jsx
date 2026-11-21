@@ -11,12 +11,12 @@ export default function Layout({ children }) {
   };
 
   return (
-    <>
+    <div className={`app-shell role-${role?.toLowerCase() || "guest"}`}>
       <header className="nav">
         <div className="nav-inner">
           <div className="logo">
             <div className="logo-mark"><QrCode size={20} /></div>
-            QR Attendance
+            <span>QR Attendance</span>
           </div>
           {role === "STUDENT" && (
             <nav className="student-nav" aria-label="Student sections">
@@ -40,6 +40,6 @@ export default function Layout({ children }) {
         </div>
       </header>
       <main className="container">{children}</main>
-    </>
+    </div>
   );
 }

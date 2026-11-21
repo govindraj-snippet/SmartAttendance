@@ -450,12 +450,16 @@ export default function Teacher() {
     : 0;
 
   return (
-    <>
-      <div className="page-head">
-        <h1>Teacher dashboard</h1>
-        <p className="muted">
-          Start a location-verified session, show the QR, and record verified student scans.
-        </p>
+    <div className="teacher-dashboard">
+      <div className="page-head dashboard-head">
+        <div>
+          <span className="role-kicker"><UsersRound size={14} /> Teacher workspace</span>
+          <h1>Teacher dashboard</h1>
+          <p className="muted">
+            Create courses, run verified sessions, and review attendance records.
+          </p>
+        </div>
+        {active && <span className="live-session-chip"><i /> Session live</span>}
       </div>
 
       {msg && <div className={`alert ${msg.type}`}>{msg.text}</div>}
@@ -1197,6 +1201,6 @@ export default function Teacher() {
         </div>
       </div>
       </div>}
-    </>
+    </div>
   );
 }

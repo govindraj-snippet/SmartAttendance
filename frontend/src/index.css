@@ -1,26 +1,17 @@
 :root {
-  --bg: #f5f6fb; --card: #ffffff; --text: #161a2d; --muted: #6b7190; --border: #e6e8f2;
-  --primary: #5b5bf0; --primary-2: #8b5cf6; --primary-soft: #eeeeff;
-  --success: #16a34a; --success-soft: #e7f8ee;
-  --danger: #dc2626; --danger-soft: #fdecec;
-  --shadow: 0 10px 30px rgba(30, 35, 90, 0.08);
+  --bg: #0d1220; --card: #171d2e; --card-2: #1d2540; --text: #f4f6ff;
+  --muted: #9ea8c2; --border: #29324b; --primary: #8b7cf6; --primary-2: #5e72e6;
+  --primary-soft: #292b50; --success: #45d19b; --success-soft: #16372f;
+  --danger: #fb7185; --danger-soft: #40202a; --shadow: 0 18px 46px rgba(3, 6, 18, 0.32);
   --radius: 18px;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0e1020; --card: #171a30; --text: #eef0ff; --muted: #9a9fc2; --border: #262a4a;
-    --primary-soft: #23264d; --success-soft: #12301f; --danger-soft: #3a1717;
-    --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  }
-}
-
 * { box-sizing: border-box; margin: 0; }
 body {
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: var(--bg); color: var(--text); min-height: 100vh;
   background-image:
-    radial-gradient(900px 400px at 10% -10%, rgba(91, 91, 240, 0.18), transparent),
-    radial-gradient(700px 400px at 100% 0%, rgba(139, 92, 246, 0.15), transparent);
+    radial-gradient(900px 420px at 10% -10%, rgba(91, 91, 231, 0.12), transparent),
+    radial-gradient(700px 420px at 100% 0%, rgba(124, 92, 231, 0.09), transparent);
   background-attachment: fixed;
 }
 h1, h2, h3 { letter-spacing: -0.02em; }
@@ -593,4 +584,333 @@ textarea.input { padding-left: 14px; resize: vertical; min-height: 90px; }
   border-radius: 99px;
   border: 1px solid var(--border);
   margin-bottom: 18px;
+}
+
+/* ---------- Dark role-based workspace ---------- */
+body {
+  background:
+    radial-gradient(700px 520px at 8% -12%, rgba(110, 92, 244, 0.18), transparent 70%),
+    radial-gradient(600px 480px at 92% 8%, rgba(38, 151, 166, 0.08), transparent 72%),
+    #0d1220;
+}
+option { background: #171d2e; color: var(--text); }
+.app-shell { min-height: 100vh; }
+.nav {
+  background: rgba(13, 18, 32, 0.88);
+  border-bottom: 1px solid rgba(151, 163, 196, 0.12);
+  box-shadow: 0 10px 30px rgba(3, 6, 18, 0.12);
+}
+.nav-inner { min-height: 68px; max-width: 1180px; }
+.logo-mark {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 22px rgba(111, 91, 246, 0.28);
+}
+.nav-right .btn-ghost { background: #141a2b; }
+.who b { color: var(--text); }
+.container { max-width: 1180px; padding-top: 34px; }
+.page-head {
+  border: 0;
+  margin-bottom: 20px;
+  padding: 0;
+}
+.dashboard-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 92px;
+  padding: 18px 22px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(139, 124, 246, 0.12), transparent 58%),
+    var(--card);
+  box-shadow: var(--shadow);
+}
+.dashboard-head h1 { margin-top: 7px; font-size: clamp(28px, 4vw, 38px); }
+.dashboard-head .muted { margin-top: 5px; }
+.role-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.live-session-chip, .student-step-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: rgba(13, 18, 32, 0.48);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+.live-session-chip { color: var(--success); }
+.live-session-chip i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 12px rgba(69, 209, 155, 0.8);
+}
+.card {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.018), transparent 45%), var(--card);
+  border-color: rgba(151, 163, 196, 0.16);
+  box-shadow: var(--shadow);
+}
+.card-title { color: #f7f8ff; }
+.input {
+  background: #111728;
+  border-color: #303950;
+  color: var(--text);
+}
+.input::placeholder { color: #7e879f; }
+.input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(139, 124, 246, 0.12); }
+.btn-ghost { background: #171d2e; color: var(--text); border-color: #303950; }
+.btn-ghost:hover { background: #202740; }
+.btn-primary {
+  background: linear-gradient(135deg, #7567df, #9a72d9);
+  box-shadow: 0 10px 24px rgba(117, 103, 223, 0.28);
+}
+.badge { background: rgba(139, 124, 246, 0.14); color: #b9afff; }
+.alert.error { background: rgba(251, 113, 133, 0.12); color: #ff9aab; border-color: rgba(251, 113, 133, 0.22); }
+.alert.ok { background: rgba(69, 209, 155, 0.12); color: #73ddb3; border-color: rgba(69, 209, 155, 0.22); }
+.tabs {
+  background: #111728;
+  border: 1px solid var(--border);
+}
+.tabs button.on { background: #202740; color: var(--text); }
+.role-pick button { background: #111728; border-color: #303950; }
+.role-pick button.on { background: rgba(139, 124, 246, 0.12); border-color: #8b7cf6; }
+
+/* Login uses a quieter navy-to-teal split */
+.auth { background: #0d1220; }
+.auth-hero {
+  background:
+    radial-gradient(400px 320px at 20% 18%, rgba(139, 124, 246, 0.28), transparent),
+    linear-gradient(145deg, #17182d 0%, #17243a 55%, #12313a 100%);
+  border-right: 1px solid rgba(151, 163, 196, 0.12);
+}
+.auth-panel {
+  background:
+    radial-gradient(500px 400px at 100% 100%, rgba(69, 209, 155, 0.06), transparent),
+    #0d1220;
+}
+.auth-card { background: #171d2e; border-color: #2b344c; }
+.auth-card > .logo { color: var(--text); }
+.auth-card h2 { color: var(--text); }
+.hero-points div { background: rgba(255, 255, 255, 0.055); }
+
+/* Teacher: violet management surfaces */
+.role-teacher { --role-accent: #a99cff; --role-accent-soft: rgba(139, 124, 246, 0.13); }
+.role-teacher .logo-mark { background: linear-gradient(135deg, #8b7cf6, #5e72e6); }
+.role-teacher .badge { color: #c7c0ff; }
+.teacher-sections {
+  background: #151b2c;
+  border-color: #303950;
+  box-shadow: 0 12px 30px rgba(3, 6, 18, 0.18);
+}
+.teacher-section-tab { color: #99a5bf; }
+.teacher-section-tab:hover { background: #1c2340; color: var(--text); }
+.teacher-section-tab.on {
+  background: rgba(139, 124, 246, 0.16);
+  color: #c7c0ff;
+  box-shadow: inset 0 0 0 1px rgba(139, 124, 246, 0.18);
+}
+.teacher-tab-count { background: #111728; }
+.performance-course-card { background: #141a2b; border-color: #303950; }
+.performance-course-heading, .performance-summary > div { background: #111728; border-color: #303950; }
+.performance-table th { color: #9ea8c2; }
+.performance-table td, .performance-table th { border-color: #303950; }
+.course-manager { border-top: 3px solid #7768d7; }
+.geo-box, .radius-btn { background: #111728; border-color: #303950; }
+.radius-btn.on { background: rgba(139, 124, 246, 0.16); border-color: #8b7cf6; color: #c7c0ff; }
+
+/* Student: teal primary actions and compact scan-first display */
+.role-student { --role-accent: #55d8c2; --role-accent-soft: rgba(69, 209, 155, 0.12); }
+.role-student .logo-mark { background: linear-gradient(135deg, #45c6af, #4387cf); }
+.role-student .role-kicker { color: #67dbc5; }
+.role-student .badge { color: #73ddb3; background: rgba(69, 209, 155, 0.12); }
+.role-student .dashboard-head {
+  background:
+    linear-gradient(135deg, rgba(69, 209, 155, 0.13), transparent 60%),
+    var(--card);
+}
+.student-nav {
+  background: #111728;
+  border: 1px solid #303950;
+  padding: 5px;
+  border-radius: 13px;
+}
+.student-nav-link { color: #99a5bf; }
+.student-nav-link:hover,
+.student-nav-link.active {
+  background: rgba(69, 209, 155, 0.12);
+  color: #73ddb3;
+}
+.role-student .btn-primary {
+  background: linear-gradient(135deg, #38aa96, #4f86d1);
+  box-shadow: 0 10px 24px rgba(56, 170, 150, 0.22);
+}
+.student-scan { border-top: 3px solid #45c6af; }
+.student-course-item, .student-profile-summary {
+  background: #111728;
+  border-color: #303950;
+}
+.student-course-item:hover { border-color: #47a99a; }
+.student-geo-notice { background: #111728; border-color: #303950; }
+.enrolled-pill { background: rgba(69, 209, 155, 0.12); }
+
+@media (max-width: 680px) {
+  .dashboard-head { align-items: flex-start; min-height: 0; padding: 16px; }
+  .live-session-chip, .student-step-chip { margin-top: 8px; }
+  .nav-inner { min-height: 62px; }
+  .student-nav { background: #111728; }
+}
+
+/* Keep the application header distinct from both the page and its cards. */
+.nav {
+  background: #171438;
+  border-bottom-color: #393365;
+  box-shadow: 0 8px 26px rgba(3, 6, 18, 0.38);
+}
+.nav .logo { color: #f7f8ff; }
+.nav .logo-mark { color: #fff; }
+.nav .who b { color: #f7f8ff; font-size: 15px; }
+.nav .who .badge {
+  margin-top: 5px;
+  background: #302b58;
+  color: #e0e8fa;
+  letter-spacing: 0.045em;
+}
+.nav .nav-right .btn-ghost {
+  min-height: 38px;
+  border-color: #4a4572;
+  background: #211d46;
+  color: #f2f5ff;
+  font-weight: 700;
+}
+.nav .nav-right .btn-ghost:hover { background: #302b58; }
+.nav .student-nav {
+  background: #110f2b;
+  border-color: #393365;
+}
+.nav .student-nav-link {
+  color: #d3ddf0;
+  font-size: 14px;
+  font-weight: 700;
+}
+.nav .student-nav-link:hover { color: #fff; }
+.role-teacher .nav .student-nav-link.active {
+  background: rgba(169, 156, 255, 0.18);
+  color: #d5ccff;
+}
+.role-student .nav .student-nav-link.active {
+  background: rgba(85, 216, 194, 0.16);
+  color: #8be8d6;
+}
+
+/* ---------- Polished dashboard details ---------- */
+button, input, select, textarea, summary { font-family: inherit; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
+  outline: 3px solid rgba(91, 91, 231, 0.22);
+  outline-offset: 2px;
+}
+.nav-inner { min-height: 64px; }
+.logo-mark { border-radius: 12px; }
+.who { padding-right: 2px; }
+.who b { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.container { padding-top: 32px; }
+.page-head {
+  padding: 2px 0 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 22px;
+}
+.page-head h1 { font-size: clamp(26px, 3vw, 34px); }
+.page-head .muted { margin-top: 7px; max-width: 680px; line-height: 1.55; }
+.card { box-shadow: 0 10px 32px rgba(35, 39, 85, 0.07); }
+.card-title { color: var(--text); }
+.btn { min-height: 42px; }
+.btn-sm { min-height: 36px; }
+.input { min-height: 44px; }
+.input::placeholder { color: #9a9db0; }
+.alert { border: 1px solid transparent; line-height: 1.45; }
+.alert.error { border-color: rgba(220, 38, 38, 0.12); }
+.alert.ok { border-color: rgba(22, 163, 74, 0.12); }
+.auth-panel { background:
+  radial-gradient(circle at 100% 100%, rgba(91, 91, 231, 0.10), transparent 40%);
+}
+.auth-card {
+  max-width: 430px;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 24px 70px rgba(51, 48, 116, 0.13);
+}
+.auth-card h2 { margin-top: 22px; }
+.auth-card > .logo { justify-content: center; }
+.auth-card .tabs { margin: 20px 0 16px; }
+.auth-card .field { margin-bottom: 13px; }
+.auth-card .btn-primary { margin-top: 4px; }
+.hero-points div {
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+}
+.teacher-sections {
+  overflow-x: auto;
+  box-shadow: 0 8px 24px rgba(35, 39, 85, 0.05);
+}
+.teacher-section-tab { flex-shrink: 0; transition: 0.15s ease; }
+.teacher-section-tab:hover { background: var(--bg); color: var(--text); }
+.teacher-section-tab.on { box-shadow: 0 3px 10px rgba(91, 91, 231, 0.10); }
+.course-manager, .performance-section { border-top: 3px solid var(--primary-soft); }
+.student-scan { padding: 28px; }
+.student-scan .result-icon { margin-top: 14px; }
+.student-scan h2 { font-size: 23px; }
+.student-course-item { transition: border-color 0.15s, transform 0.15s; }
+.student-course-item:hover { border-color: #cfd2ee; }
+.student-profile-summary { padding: 12px; border-radius: 12px; background: var(--bg); }
+.qr-box { box-shadow: 0 14px 40px rgba(35, 39, 85, 0.13); }
+
+@media (max-width: 860px) {
+  .auth-card { box-shadow: 0 12px 36px rgba(51, 48, 116, 0.10); }
+  .auth-panel { min-height: 100vh; align-items: center; }
+  .container { padding: 24px 14px 46px; }
+  .page-head { padding-bottom: 16px; }
+  .nav-inner { padding: 10px 14px; }
+  .teacher-sections { border-radius: 12px; }
+  .student-scan { padding: 22px 18px; }
+}
+
+@media (max-width: 680px) {
+  .nav-inner { gap: 8px; }
+  .logo { font-size: 16px; }
+  .logo-mark { width: 34px; height: 34px; }
+  .who { display: none; }
+  .student-nav { border-top: 1px solid var(--border); padding-top: 8px; }
+  .nav-right .btn { padding: 8px 10px; }
+  .auth-panel { padding: 18px 14px; }
+  .auth-card { padding: 22px 18px; }
+  .auth-card h2 { font-size: 24px; }
+  .role-pick button { min-height: 74px; }
+  .page-head h1 { font-size: 26px; }
+  .teacher-sections { display: grid; grid-template-columns: repeat(3, minmax(118px, 1fr)); overflow-x: auto; }
+  .teacher-section-tab { min-width: 118px; }
+  .course-fields .btn, .teacher-profile-form .btn { width: 100%; }
+  .enroll-form { grid-template-columns: 1fr; }
+  .student-course-item { padding: 12px; }
+  .student-profile-summary { align-items: flex-start; }
+  .student-profile-summary .muted { flex-basis: 100%; }
+  .student-profile-summary .btn { margin-left: 0; }
+  .qr-box svg { width: min(260px, 68vw); }
 }
