@@ -2,11 +2,19 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { QrCode, Mail, Lock, User, GraduationCap, Users, Loader2, ShieldCheck, Zap, BarChart3 } from "lucide-react";
 import api, { errMsg } from "./api";
+import { ACADEMIC_YEARS, BRANCHES } from "./academic";
 
 export default function Login() {
   const nav = useNavigate();
   const [mode, setMode] = useState("login");
-  const [f, setF] = useState({ name: "", email: "", password: "", role: "STUDENT" });
+  const [f, setF] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "STUDENT",
+    year: "",
+    branch: "",
+  });
   const [msg, setMsg] = useState(null);
   const [loading, setLoading] = useState(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
@@ -17,7 +25,11 @@ export default function Login() {
     setMsg(null);
     try {
       if (mode === "register") {
-        await api.post("/auth/register", f);
+        const registration = { ...f };
+        if (f.role === "TEACHER") {
+          delete registration.year;
+        }
+        await api.post("/auth/register", registration);
         setMode("login");
         setMsg({ type: "ok", text: "Account created! Please log in." });
       } else {
@@ -77,6 +89,53 @@ export default function Login() {
                 <User size={17} />
                 <input className="input" placeholder="Full name" value={f.name} onChange={set("name")} required />
               </div>
+              {f.role === "STUDENT" && (
+                <>
+                  <label className="register-label" htmlFor="student-year">Academic year</label>
+                  <select
+                    id="student-year"
+                    className="input register-select"
+                    value={f.year}
+                    onChange={set("year")}
+                    required
+                  >
+                    <option value="">Select your year</option>
+                    {ACADEMIC_YEARS.map((year) => (
+                      <option key={year} value={year}>Year {year}</option>
+                    ))}
+                  </select>
+                  <label className="register-label" htmlFor="student-branch">Branch</label>
+                  <select
+                    id="student-branch"
+                    className="input register-select"
+                    value={f.branch}
+                    onChange={set("branch")}
+                    required
+                  >
+                    <option value="">Select your branch</option>
+                    {BRANCHES.map((branch) => (
+                      <option key={branch} value={branch}>{branch}</option>
+                    ))}
+                  </select>
+                </>
+              )}
+              {f.role === "TEACHER" && (
+                <>
+                  <label className="register-label" htmlFor="teacher-branch">Branch</label>
+                  <select
+                    id="teacher-branch"
+                    className="input register-select"
+                    value={f.branch}
+                    onChange={set("branch")}
+                    required
+                  >
+                    <option value="">Select your branch</option>
+                    {BRANCHES.map((branch) => (
+                      <option key={branch} value={branch}>{branch}</option>
+                    ))}
+                  </select>
+                </>
+              )}
             </>
           )}
 

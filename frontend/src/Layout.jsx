@@ -1,4 +1,5 @@
-import { LogOut, QrCode } from "lucide-react";
+import { BookOpen, LogOut, QrCode, ScanLine } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 export default function Layout({ children }) {
   const name = localStorage.getItem("name") || "User";
@@ -17,6 +18,16 @@ export default function Layout({ children }) {
             <div className="logo-mark"><QrCode size={20} /></div>
             QR Attendance
           </div>
+          {role === "STUDENT" && (
+            <nav className="student-nav" aria-label="Student sections">
+              <NavLink to="/student/attendance" className={({ isActive }) => `student-nav-link${isActive ? " active" : ""}`}>
+                <ScanLine size={16} /> Mark attendance
+              </NavLink>
+              <NavLink to="/student/courses" className={({ isActive }) => `student-nav-link${isActive ? " active" : ""}`}>
+                <BookOpen size={16} /> Courses
+              </NavLink>
+            </nav>
+          )}
           <div className="nav-right">
             <div className="who">
               <b>{name}</b>

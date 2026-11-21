@@ -8,7 +8,11 @@ function Protected({ role, children }) {
   const token = localStorage.getItem("token");
   const myRole = localStorage.getItem("role");
   if (!token) return <Navigate to="/" replace />;
-  if (myRole !== role) return <Navigate to={myRole === "TEACHER" ? "/teacher" : "/student"} replace />;
+  if (myRole !== role) {
+    if (myRole === "TEACHER") return <Navigate to="/teacher" replace />;
+    if (myRole === "STUDENT") return <Navigate to="/student/attendance" replace />;
+    return <Navigate to="/" replace />;
+  }
   return <Layout>{children}</Layout>;
 }
 
@@ -18,7 +22,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/teacher" element={<Protected role="TEACHER"><Teacher /></Protected>} />
-        <Route path="/student" element={<Protected role="STUDENT"><Student /></Protected>} />
+        <Route path="/student" element={<Navigate to="/student/attendance" replace />} />
+        <Route path="/student/attendance" element={<Protected role="STUDENT"><Student /></Protected>} />
+        <Route path="/student/courses" element={<Protected role="STUDENT"><Student /></Protected>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
