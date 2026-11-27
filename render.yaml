@@ -6,8 +6,10 @@ services:
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
-    healthCheckPath: /
+    healthCheckPath: /healthz
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.14.7"
       - key: APP_ENV
         value: production
       - key: DATABASE_URL
@@ -15,6 +17,6 @@ services:
       - key: FRONTEND_ORIGIN
         sync: false
       - key: SECRET_KEY
-        sync: false
+        generateValue: true
       - key: TEACHER_SIGNUP_CODE
         sync: false

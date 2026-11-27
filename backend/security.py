@@ -6,14 +6,13 @@ from datetime import datetime, timedelta, timezone
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-from database import get_db
+from database import APP_ENV, get_db
 from models import User
 
-APP_ENV = os.getenv("APP_ENV", "development").strip().lower()
 SECRET = os.getenv("SECRET_KEY")
+if APP_ENV == "production" and len((SECRET or "").strip()) < 32:
+    raise RuntimeError("SECRET_KEY must contain at least 32 characters in production")
 if not SECRET:
-    if APP_ENV == "production":
-        raise RuntimeError("SECRET_KEY must be configured in production")
     SECRET = "dev-only-secret-change-me-dev-only-secret"
 
 TEACHER_SIGNUP_CODE = os.getenv("TEACHER_SIGNUP_CODE")
@@ -38,7 +37,8 @@ def hash_password(p: str) -> str:
 
 
 def verify_password(p: str, h: str) -> bool:
-    return bcrypt.checkpw(p.encode(), h.encode())
+    encoded = p.encode()
+    return len(encoded) <= 72 and bcrypt.checkpw(encoded, h.encode())
 
 
 def _now():

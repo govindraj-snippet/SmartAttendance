@@ -1,8 +1,10 @@
 import io
 import math
 import os
+from contextlib import asynccontextmanager
 from datetime import timedelta
 from typing import Literal
+from urllib.parse import urlsplit
 
 import jwt
 from fastapi import FastAPI, Depends, HTTPException, Query, Request
@@ -11,88 +13,104 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from openpyxl import Workbook
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import func, inspect
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from database import Base, engine, get_db
+from database import APP_ENV, Base, engine, get_db
 from models import User, Course, Enrollment, AttendanceSession, Attendance
 from security import (hash_password, verify_password, auth_token, qr_token,
-                      decode, require_role, APP_ENV, valid_teacher_signup_code)
+                      decode, require_role, valid_teacher_signup_code)
 
 BRANCHES = ("IT", "CS", "ENTC", "PROD", "MECHANICAL", "TEXTILE", "ELECTRICAL", "INSTRU")
 
-Base.metadata.create_all(bind=engine)
 
-
-def auto_migrate():
-    with engine.begin() as conn:
-        inspector = inspect(conn)
-        tables = set(inspector.get_table_names())
-        if "users" in tables:
-            columns = {column["name"] for column in inspector.get_columns("users")}
-            if "academic_year" not in columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE users ADD COLUMN academic_year INTEGER"
-                )
-            if "branch" not in columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE users ADD COLUMN branch VARCHAR(80)"
-                )
-
-        if "courses" in tables:
-            columns = {column["name"] for column in inspector.get_columns("courses")}
-            if "academic_year" not in columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE courses ADD COLUMN academic_year INTEGER"
-                )
-            if "branch" not in columns:
-                conn.exec_driver_sql(
-                    "ALTER TABLE courses ADD COLUMN branch VARCHAR(80) NOT NULL DEFAULT ''"
-                )
+def auto_migrate(conn):
+    inspector = inspect(conn)
+    tables = set(inspector.get_table_names())
+    if "users" in tables:
+        columns = {column["name"] for column in inspector.get_columns("users")}
+        if "academic_year" not in columns:
             conn.exec_driver_sql(
-                "CREATE INDEX IF NOT EXISTS ix_courses_year_branch "
-                "ON courses (academic_year, branch)"
+                "ALTER TABLE users ADD COLUMN academic_year INTEGER"
+            )
+        if "branch" not in columns:
+            conn.exec_driver_sql(
+                "ALTER TABLE users ADD COLUMN branch VARCHAR(80)"
             )
 
-        if "sessions" in tables:
-            columns = {column["name"] for column in inspector.get_columns("sessions")}
-            session_columns = {
-                "lat": "FLOAT DEFAULT 0.0",
-                "lng": "FLOAT DEFAULT 0.0",
-                "accuracy": "FLOAT DEFAULT 0.0",
-                "radius": "INTEGER DEFAULT 100",
-                "course_id": "INTEGER REFERENCES courses(id)",
-            }
-            for name, definition in session_columns.items():
-                if name not in columns:
-                    conn.exec_driver_sql(
-                        f"ALTER TABLE sessions ADD COLUMN {name} {definition}"
-                    )
-
-        if "attendance" in tables:
-            columns = {column["name"] for column in inspector.get_columns("attendance")}
-            if "distance" not in columns:
-                conn.exec_driver_sql("ALTER TABLE attendance ADD COLUMN distance FLOAT")
-
-        if "sessions" in tables:
+    if "courses" in tables:
+        columns = {column["name"] for column in inspector.get_columns("courses")}
+        if "academic_year" not in columns:
             conn.exec_driver_sql(
-                "CREATE INDEX IF NOT EXISTS ix_sessions_course_id ON sessions (course_id)"
+                "ALTER TABLE courses ADD COLUMN academic_year INTEGER"
             )
+        if "branch" not in columns:
+            conn.exec_driver_sql(
+                "ALTER TABLE courses ADD COLUMN branch VARCHAR(80) NOT NULL DEFAULT ''"
+            )
+        conn.exec_driver_sql(
+            "CREATE INDEX IF NOT EXISTS ix_courses_year_branch "
+            "ON courses (academic_year, branch)"
+        )
+
+    if "sessions" in tables:
+        columns = {column["name"] for column in inspector.get_columns("sessions")}
+        session_columns = {
+            "lat": "FLOAT DEFAULT 0.0",
+            "lng": "FLOAT DEFAULT 0.0",
+            "accuracy": "FLOAT DEFAULT 0.0",
+            "radius": "INTEGER DEFAULT 100",
+            "course_id": "INTEGER REFERENCES courses(id)",
+        }
+        for name, definition in session_columns.items():
+            if name not in columns:
+                conn.exec_driver_sql(
+                    f"ALTER TABLE sessions ADD COLUMN {name} {definition}"
+                )
+
+    if "attendance" in tables:
+        columns = {column["name"] for column in inspector.get_columns("attendance")}
+        if "distance" not in columns:
+            conn.exec_driver_sql("ALTER TABLE attendance ADD COLUMN distance FLOAT")
+
+    if "sessions" in tables:
+        conn.exec_driver_sql(
+            "CREATE INDEX IF NOT EXISTS ix_sessions_course_id ON sessions (course_id)"
+        )
 
 
-auto_migrate()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        with engine.begin() as conn:
+            if conn.dialect.name == "postgresql":
+                # Serialize startup schema changes during overlapping deployments.
+                conn.exec_driver_sql("SELECT pg_advisory_xact_lock(647135819)")
+            Base.metadata.create_all(bind=conn)
+            auto_migrate(conn)
+        yield
+    finally:
+        engine.dispose()
 
-app = FastAPI(title="QR Attendance")
+
+app = FastAPI(title="QR Attendance", lifespan=lifespan)
 
 frontend_origins = os.getenv("FRONTEND_ORIGIN")
-if APP_ENV == "production" and not frontend_origins:
-    raise RuntimeError("FRONTEND_ORIGIN must be configured in production")
 origins = [
     origin.strip().rstrip("/")
-    for origin in (frontend_origins or "http://localhost:5173").split(",")
+    for origin in (frontend_origins or ("" if APP_ENV == "production" else "http://localhost:5173")).split(",")
     if origin.strip()
 ]
+if APP_ENV == "production":
+    for origin in origins:
+        parsed = urlsplit(origin)
+        if (parsed.scheme != "https" or not parsed.hostname or parsed.username is not None
+                or parsed.path or parsed.query or parsed.fragment or "*" in origin):
+            raise RuntimeError("FRONTEND_ORIGIN must contain only HTTPS origins")
+    if not origins:
+        raise RuntimeError("FRONTEND_ORIGIN must be configured in production")
+
 app.add_middleware(CORSMiddleware, allow_origins=origins,
                    allow_methods=["*"], allow_headers=["*"])
 
@@ -179,6 +197,16 @@ def health():
     return {"status": "ok"}
 
 
+@app.get("/healthz")
+def readiness():
+    try:
+        with engine.connect() as conn:
+            conn.exec_driver_sql("SELECT 1")
+    except SQLAlchemyError:
+        return JSONResponse({"status": "unavailable"}, status_code=503)
+    return {"status": "ok"}
+
+
 # ---------- Auth ----------
 @app.post("/api/auth/register")
 def register(r: RegisterReq, db: Session = Depends(get_db)):
@@ -203,14 +231,17 @@ def register(r: RegisterReq, db: Session = Depends(get_db)):
             raise HTTPException(400, "Teachers must provide their branch")
     if branch and branch not in BRANCHES:
         raise HTTPException(400, f"Branch must be one of: {', '.join(BRANCHES)}")
-    db.add(User(name=r.name.strip(), email=email,
-                password=hash_password(r.password), role=r.role))
-    db.flush()
-    user = db.query(User).filter(User.email == email).first()
-    user.name = name
-    user.academic_year = academic_year
-    user.branch = branch
-    db.commit()
+    if not 1 <= len(r.password.encode()) <= 72:
+        raise HTTPException(400, "Password must be between 1 and 72 UTF-8 bytes")
+    db.add(User(name=name, email=email, password=hash_password(r.password),
+                role=r.role, academic_year=academic_year, branch=branch))
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        if db.query(User.id).filter(User.email == email).first():
+            raise HTTPException(400, "Email already exists") from None
+        raise
     return {"message": "Registered"}
 
 
@@ -883,8 +914,6 @@ def mark_attendance(r: MarkReq, db: Session = Depends(get_db),
         # Device tolerance: sum of accuracies, with minimum 200m buffer for indoor variance (up to 1200m)
         device_tolerance = max(min(teacher_acc + student_acc, 1200.0), 200.0)
         allowed = s.radius + device_tolerance
-
-        print(f"[ATTENDANCE] Session #{s.id} ('{s.title}'): Teacher=({s.lat}, {s.lng}, acc={teacher_acc}m, radius={s.radius}m) | Student=({r.lat}, {r.lng}, acc={student_acc}m) | Distance={round(dist, 1)}m | Allowed={round(allowed, 1)}m")
 
         if dist > allowed:
             raise HTTPException(
