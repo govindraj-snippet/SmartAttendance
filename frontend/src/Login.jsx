@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { QrCode, Mail, Lock, User, GraduationCap, Users, Loader2, ShieldCheck, Zap, BarChart3 } from "lucide-react";
+import { QrCode, Mail, Lock, User, GraduationCap, Users, Loader2 } from "lucide-react";
 import api, { errMsg } from "./api";
 import { ACADEMIC_YEARS, BRANCHES } from "./academic";
 
@@ -51,28 +51,22 @@ export default function Login() {
 
   return (
     <div className="auth">
-      <section className="auth-hero">
-        <div className="logo" style={{ color: "#fff" }}>
-          <div className="logo-mark" style={{ background: "rgba(255,255,255,.2)" }}><QrCode size={20} /></div>
-          QR Attendance
-        </div>
-        <h1>Attendance in one scan.</h1>
-        <p>Teachers show a live QR code. Students scan it with their phone. No paper, no roll calls.</p>
-        <div className="hero-points">
-          <div><Zap /> Marked in under 2 seconds</div>
-          <div><ShieldCheck /> QR refreshes every 10s, so shared photos won't work</div>
-          <div><BarChart3 /> Live list of who's present</div>
+      <section className="auth-hero" aria-labelledby="portal-title">
+        <div className="auth-identity">
+          <div className="logo-mark"><QrCode size={21} /></div>
+          <div>
+            <h1 id="portal-title">SmartAttendance</h1>
+            <p>Campus attendance portal</p>
+          </div>
         </div>
       </section>
 
       <section className="auth-panel">
-        <form className="card auth-card" onSubmit={submit}>
-          <div className="logo"><div className="logo-mark"><QrCode size={20} /></div>QR Attendance</div>
-          <h2>{mode === "login" ? "Welcome back" : "Create account"}</h2>
-          <p className="muted">{mode === "login" ? "Log in to continue" : "Join as a teacher or student"}</p>
+        <form className="auth-card" onSubmit={submit}>
+          <h2>{mode === "login" ? "Sign in" : "Create an account"}</h2>
 
           <div className="tabs">
-            <button type="button" className={mode === "login" ? "on" : ""} onClick={() => { setMode("login"); setMsg(null); }}>Login</button>
+            <button type="button" className={mode === "login" ? "on" : ""} onClick={() => { setMode("login"); setMsg(null); }}>Sign in</button>
             <button type="button" className={mode === "register" ? "on" : ""} onClick={() => { setMode("register"); setMsg(null); }}>Register</button>
           </div>
 
@@ -89,9 +83,10 @@ export default function Login() {
                   <Users /> Teacher
                 </button>
               </div>
+              <label className="register-label" htmlFor="auth-name">Full name</label>
               <div className="field">
                 <User size={17} />
-                <input className="input" aria-label="Full name" autoComplete="name" placeholder="Full name" value={f.name} onChange={set("name")} required />
+                <input id="auth-name" className="input" aria-label="Full name" autoComplete="name" placeholder="Full name" value={f.name} onChange={set("name")} required />
               </div>
               {f.role === "STUDENT" && (
                 <>
@@ -155,13 +150,15 @@ export default function Login() {
             </>
           )}
 
+          <label className="register-label" htmlFor="auth-email">Email address</label>
           <div className="field">
             <Mail size={17} />
-            <input className="input" type="email" aria-label="Email address" autoComplete="email" placeholder="Email address" value={f.email} onChange={set("email")} required />
+            <input id="auth-email" className="input" type="email" aria-label="Email address" autoComplete="email" placeholder="you@example.edu" value={f.email} onChange={set("email")} required />
           </div>
+          <label className="register-label" htmlFor="auth-password">Password</label>
           <div className="field">
             <Lock size={17} />
-            <input className="input" type="password" aria-label="Password" autoComplete={mode === "login" ? "current-password" : "new-password"} placeholder={mode === "login" ? "Password" : "Password (minimum 6 characters)"} value={f.password} onChange={set("password")} required minLength={6} />
+            <input id="auth-password" className="input" type="password" aria-label="Password" autoComplete={mode === "login" ? "current-password" : "new-password"} placeholder={mode === "login" ? "Password" : "Password (minimum 6 characters)"} value={f.password} onChange={set("password")} required minLength={6} />
           </div>
 
           <button className="btn btn-primary btn-block" disabled={loading}>

@@ -1,4 +1,4 @@
-import { BookOpen, LogOut, QrCode, ScanLine } from "lucide-react";
+import { BookOpen, CalendarDays, LogOut, QrCode, ScanLine } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 export default function Layout({ children }) {
@@ -16,7 +16,7 @@ export default function Layout({ children }) {
         <div className="nav-inner">
           <div className="logo">
             <div className="logo-mark"><QrCode size={20} /></div>
-            <span>QR Attendance</span>
+            <span>SmartAttendance</span>
           </div>
           {role === "STUDENT" && (
             <nav className="student-nav" aria-label="Student sections">
@@ -25,6 +25,9 @@ export default function Layout({ children }) {
               </NavLink>
               <NavLink to="/student/courses" className={({ isActive }) => `student-nav-link${isActive ? " active" : ""}`}>
                 <BookOpen size={16} /> Courses
+              </NavLink>
+              <NavLink to="/student/history" className={({ isActive }) => `student-nav-link${isActive ? " active" : ""}`}>
+                <CalendarDays size={16} /> My attendance
               </NavLink>
             </nav>
           )}

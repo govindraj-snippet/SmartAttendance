@@ -34,7 +34,7 @@ Vercel serves the React frontend. The browser sends API requests to FastAPI on R
    | `FRONTEND_ORIGIN` | Your exact Vercel production origin, if known. Otherwise enter `https://smartattendance.example.invalid` until step 5 |
    | `TEACHER_SIGNUP_CODE` | A private random code that authorized teachers enter during registration |
 
-   Generate a teacher code locally with `python -c "import secrets; print(secrets.token_urlsafe(32))"`. Render generates the separate `SECRET_KEY` for the Blueprint. Keep both secrets in Render.
+   If you already have a private `backend/.env` containing `TEACHER_SIGNUP_CODE`, paste its value into Render. To create a new code, use `python -c "import secrets; print(secrets.token_urlsafe(32))"`. Render generates the separate `SECRET_KEY` for the Blueprint. Keep both secrets in Render.
 
 3. Apply the Blueprint. Open the service's **Events** or **Logs** and wait for startup. Copy the assigned public URL, such as `https://smartattendance-api.onrender.com`.
 4. Open the Render URL with `/healthz` appended. Expect HTTP 200 with `{"status":"ok"}` when the API can query Supabase.
@@ -96,7 +96,7 @@ The first response should be HTTP 200 with `{"status":"ok"}`. The second should 
 
 1. Open Vercel in a browser. Register a test student and a test teacher with the same branch. Use the private teacher code during teacher signup.
 2. As the teacher, create a course matching the student's year and branch. Enroll the student with their email and a roll number.
-3. Start an attendance session and grant location access on the teacher device. While the QR is live, sign in as the student on a nearby phone using the HTTPS Vercel URL, grant camera and location access, and scan the QR.
+3. Open the HTTPS Vercel site directly in the teacher device browser. Use the location button or start an attendance session and allow location access. On a nearby phone, sign in as the student and tap **Open camera & scan**. Allow camera access and then allow location access. Scan the current QR. If you previously denied a permission, reset it in the browser’s site settings and retry.
 4. Check that the attendance row appears in the teacher view, then try the Excel export. Refresh a signed-in dashboard route to verify Vercel routing.
 5. Confirm the test records in Supabase Table Editor. After a Render redeploy, verify the same accounts and attendance still exist.
 

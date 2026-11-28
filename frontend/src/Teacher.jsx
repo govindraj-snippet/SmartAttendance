@@ -265,10 +265,11 @@ export default function Teacher() {
 
   // Detect location for geofencing
   const detectLocation = () => {
-    if (!navigator.geolocation) {
+    if (!window.isSecureContext || !navigator.geolocation) {
+      const message = "Location access requires a trusted HTTPS page and a browser with location support.";
       setLocStatus("denied");
-      setLocMsg("Geolocation is not supported by your browser");
-      return Promise.reject(new Error("Geolocation unsupported"));
+      setLocMsg(message);
+      return Promise.reject(new Error(message));
     }
     setLocStatus("detecting");
     setLocMsg("Detecting your classroom location...");
@@ -888,7 +889,7 @@ export default function Teacher() {
                 <div>
                   <span className="location-pill">
                     <MapPin size={13} /> Base range: ±{active.radius || 200}m
-                    {active.lat && active.lat !== 0
+                    {active.lat != null && active.lng != null
                       ? ` (${active.lat.toFixed(4)}°, ${active.lng.toFixed(4)}°)`
                       : ""}
                   </span>

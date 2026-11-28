@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from openpyxl import Workbook
 from pydantic import BaseModel, EmailStr, Field
-from sqlalchemy import func, inspect
+from sqlalchemy import and_, func, inspect
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -150,7 +150,7 @@ class SessionReq(BaseModel):
     course_id: int = Field(alias="courseId", gt=0)
     lat: float | None = Field(default=None, ge=-90, le=90)
     lng: float | None = Field(default=None, ge=-180, le=180)
-    accuracy: float = 0.0
+    accuracy: float = Field(default=0.0, ge=0, allow_inf_nan=False)
     radius: int = Field(default=200, ge=10, le=10000)
 
 
@@ -179,7 +179,7 @@ class MarkReq(BaseModel):
     qrToken: str
     lat: float | None = Field(default=None, ge=-90, le=90)
     lng: float | None = Field(default=None, ge=-180, le=180)
-    accuracy: float = 0  # GPS accuracy in metres, reported by the phone
+    accuracy: float = Field(default=0.0, ge=0, allow_inf_nan=False)  # Reported GPS accuracy in metres
 
 
 def distance_m(lat1, lng1, lat2, lng2) -> float:
@@ -189,7 +189,7 @@ def distance_m(lat1, lng1, lat2, lng2) -> float:
     dp = p2 - p1
     dl = math.radians(lng2 - lng1)
     a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
-    return 2 * R * math.asin(math.sqrt(a))
+    return 2 * R * math.asin(math.sqrt(min(1.0, a)))
 
 
 @app.get("/")
@@ -701,6 +701,39 @@ def student_courses(year: int | None = Query(default=None, ge=1, le=4),
     } for course in courses]
 
 
+@app.get("/api/student/attendance/history")
+def student_attendance_history(db: Session = Depends(get_db),
+                               student: User = Depends(require_role("STUDENT"))):
+    rows = (db.query(Course.id, Course.subject, Course.name, Course.section, Course.term,
+                     func.count(AttendanceSession.id), func.count(Attendance.id))
+            .select_from(Enrollment)
+            .join(Course, Course.id == Enrollment.course_id)
+            .outerjoin(AttendanceSession, and_(
+                AttendanceSession.course_id == Course.id,
+                AttendanceSession.started_at >= Enrollment.enrolled_at,
+                AttendanceSession.active.is_(False),
+            ))
+            .outerjoin(Attendance, and_(
+                Attendance.session_id == AttendanceSession.id,
+                Attendance.student_id == Enrollment.student_id,
+            ))
+            .filter(Enrollment.student_id == student.id)
+            .group_by(Course.id, Course.subject, Course.name, Course.section, Course.term)
+            .order_by(Course.subject, Course.name, Course.id)
+            .all())
+
+    return [{
+        "id": course_id,
+        "subject": subject,
+        "courseName": name,
+        "section": section,
+        "term": term,
+        "conducted": conducted,
+        "attended": attended,
+        "percentage": round(attended * 100 / conducted, 1) if conducted else None,
+    } for course_id, subject, name, section, term, conducted, attended in rows]
+
+
 @app.post("/api/student/courses/{course_id}/enrollments")
 def self_enroll_student(course_id: int, r: SelfEnrollmentReq,
                         db: Session = Depends(get_db),
@@ -901,7 +934,8 @@ def mark_attendance(r: MarkReq, db: Session = Depends(get_db),
 
     # Location check: student must be within the allowed radius of the teacher if location is configured
     dist = None
-    if s.lat and s.lng and (s.lat != 0.0 or s.lng != 0.0):
+    has_location = s.lat is not None and s.lng is not None
+    if has_location and (s.course_id is not None or (s.lat, s.lng) != (0.0, 0.0)):
         if r.lat is None or r.lng is None:
             raise HTTPException(400, "Location access is required to mark attendance. Please turn on GPS and allow location.")
         dist = distance_m(s.lat, s.lng, r.lat, r.lng)

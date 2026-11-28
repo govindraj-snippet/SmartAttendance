@@ -135,9 +135,8 @@ export default function Student() {
     };
   }, [selectedYear, selectedBranch, studentProfile?.profileComplete]);
 
-  const stopCamera = async () => {
-    const s = scanner.current;
-    scanner.current = null;
+  const stopCamera = async (s = scanner.current) => {
+    if (scanner.current === s) scanner.current = null;
     if (s) {
       try {
         if (s.isScanning) await s.stop();
@@ -175,7 +174,7 @@ export default function Student() {
           }
           reject(new Error(errText));
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
       );
     });
   };
@@ -216,36 +215,44 @@ export default function Student() {
   };
 
   const startScanning = () => {
-    // Proactively request / warm-up GPS location so browser asks for permission early
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        () => {},
-        () => {},
-        { enableHighAccuracy: true, timeout: 5000 }
-      );
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+      setMsg("Camera access requires a trusted HTTPS page and a browser with camera support.");
+      setStatus("error");
+      return;
     }
     setStatus("scanning");
   };
 
   useEffect(() => {
     if (status !== "scanning") return;
+    let cancelled = false;
     handled.current = false;
     const s = new Html5Qrcode("reader");
     scanner.current = s;
     s.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: { width: 230, height: 230 } },
-      onScan,
+      (text) => { if (!cancelled) void onScan(text); },
       () => {}
-    ).catch(() => {
-      setMsg("Camera blocked or unavailable. Allow camera access and make sure the site uses HTTPS.");
+    ).then(() => {
+      if (cancelled) return stopCamera(s);
+      // Let the camera prompt finish before asking for location.
+      navigator.geolocation?.getCurrentPosition(
+        () => {},
+        () => {},
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    }).catch(() => {
+      if (cancelled) return;
+      setMsg("Camera access was blocked or no camera was found. Allow camera access in your browser and try again.");
       setStatus("error");
     });
-  }, [status]);
 
-  useEffect(() => () => {
-    stopCamera();
-  }, []);
+    return () => {
+      cancelled = true;
+      if (scanner.current === s && s.isScanning) void stopCamera(s);
+    };
+  }, [status]);
 
   return (
     <div className="student student-dashboard">
@@ -255,11 +262,10 @@ export default function Student() {
           <h1>{showCourses ? "My courses" : "Mark attendance"}</h1>
           <p className="muted">
             {showCourses
-              ? "Check course availability and manage your enrollments."
-              : "Scan the classroom QR and verify your location in one step."}
+              ? "Find courses for your year and branch."
+              : "Scan the QR code displayed by your teacher."}
           </p>
         </div>
-        {!showCourses && <span className="student-step-chip">1 · Scan  2 · Verify</span>}
       </div>
 
       {showCourses && <section className="card student-courses">
@@ -399,7 +405,6 @@ export default function Student() {
 
       {!showCourses && (
       <section className="card student-scan">
-        <div className="card-title"><ScanLine size={20} /> Mark attendance</div>
         {!profileLoading && !profileError && !studentProfile?.profileComplete && (
           <div className="alert error">
             Complete your student profile in <Link to="/student/courses">Courses</Link> before marking attendance.
@@ -410,14 +415,14 @@ export default function Student() {
         {status === "idle" && (
           <>
             <div className="student-geo-notice">
-              <MapPin size={15} /> In-class verification: GPS must be turned ON
+              <MapPin size={15} /> Location access required
             </div>
             <div className="result-icon idle">
               <ScanLine size={42} />
             </div>
             <h2>Ready to scan</h2>
             <p className="muted">
-              Tap the button and point your camera at the QR code displayed on the screen.
+              Allow camera access when your browser asks.
             </p>
             <button className="btn btn-primary btn-block" onClick={startScanning}>
               <Camera size={18} /> Open camera & scan
@@ -433,6 +438,7 @@ export default function Student() {
             <button
               className="btn btn-ghost btn-block"
               onClick={async () => {
+                handled.current = true;
                 await stopCamera();
                 setStatus("idle");
               }}

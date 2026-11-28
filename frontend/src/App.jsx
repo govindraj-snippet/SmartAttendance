@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./Login";
 import Teacher from "./Teacher";
 import Student from "./Student";
+import StudentAttendanceHistory from "./StudentAttendanceHistory";
 import Layout from "./Layout";
 
 function Protected({ role, children }) {
@@ -23,8 +24,9 @@ export default function App() {
         <Route path="/" element={<Login />} />
         <Route path="/teacher" element={<Protected role="TEACHER"><Teacher /></Protected>} />
         <Route path="/student" element={<Navigate to="/student/attendance" replace />} />
-        <Route path="/student/attendance" element={<Protected role="STUDENT"><Student /></Protected>} />
-        <Route path="/student/courses" element={<Protected role="STUDENT"><Student /></Protected>} />
+        <Route path="/student/attendance" element={<Protected role="STUDENT"><Student key="scanner" /></Protected>} />
+        <Route path="/student/courses" element={<Protected role="STUDENT"><Student key="courses" /></Protected>} />
+        <Route path="/student/history" element={<Protected role="STUDENT"><StudentAttendanceHistory /></Protected>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
